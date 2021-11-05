@@ -7,7 +7,7 @@ import {
     OnUndefined,
     Param,
     Post, Put,
-    QueryParams
+    QueryParams, UseAfter, UseBefore
 } from 'routing-controllers';
 import 'reflect-metadata';
 import {Info} from '../model/info';
@@ -18,16 +18,17 @@ import {Song} from '../model/song';
 @JsonController('/artist')
 export class ArtistController {
     @Get('/:id')
+    @Header('Access-Control-Allow-Origin', '*')
     async getOne(@Param('id') id: string) {
         const artist = await Artist.findByPk(id);
         if (!artist)
             throw new Error(`Artist with id ${id} not found`);
         return artist.get();
     }
+
     @Get('s')
-    //todo вкл cors для всех запросов
-    // @Header("Access-Control-Allow-Origin", "*")
-    async getAll(@QueryParams() queryParams: {offset: number, limit: number, sortBy: string, sortOrder: 'ASC' | 'DESC'}) {
+    @Header('Access-Control-Allow-Origin', '*')
+    async getAll(@QueryParams() queryParams: { offset: number, limit: number, sortBy: string, sortOrder: 'ASC' | 'DESC' }) {
         const {offset, limit, sortBy = 'createdAt', sortOrder = 'ASC'} = queryParams;
         const sort = [[sortBy, sortOrder]];
         const artists = (await Artist.findAndCountAll({raw: true, offset, limit, order: sort}));
@@ -35,7 +36,7 @@ export class ArtistController {
     }
 
     @Post()
-    // @UseBefore(json())
+    @Header('Access-Control-Allow-Origin', '*')
     async addArtist(@Body() body: { name: string }) {
         if (!body.name)
             throw new Error('name is not defined');
@@ -47,7 +48,7 @@ export class ArtistController {
     }
 
     @Put('/:id')
-    // @UseBefore(json())
+    @Header('Access-Control-Allow-Origin', '*')
     async updateArtist(@Param('id') id: string, @Body() body: { name: string }) {
         if (!body.name)
             throw new Error('name is not defined');
@@ -59,7 +60,7 @@ export class ArtistController {
     }
 
     @Delete('/:id')
-    // @UseBefore(json())
+    @Header('Access-Control-Allow-Origin', '*')
     async deleteArtist(@Param('id') id: string) {
         const artist = (await Artist.findByPk(id));
         if (!artist)

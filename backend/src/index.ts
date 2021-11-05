@@ -1,9 +1,9 @@
 // import express from 'express';
 import log4js from 'log4js';
 import { createExpressServer } from 'routing-controllers';
-import { ArtistController } from './controller/artist-controller';
+import { ArtistController } from './controller/Artist-controller';
 import dotenv from 'dotenv';
-import {SongController} from './controller/song-controller';
+import {SongController} from './controller/Song-controller';
 import cors from 'cors';
 dotenv.config();
 
@@ -26,10 +26,8 @@ const app = createExpressServer({
     controllers: [
         ArtistController,
         SongController
-    ], // we specify controllers we want to use
+    ],
 });
-// app.get('/', (request, response) => {
-//     response.send('Hello world!');
-// });
-app.use(cors(corsOptions));
+//todo вкл cors для всех запросов
+// app.use(cors(corsOptions));
 app.listen(port, () => console.log(`Running on port ${port}`));

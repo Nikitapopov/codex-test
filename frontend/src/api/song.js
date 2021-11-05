@@ -5,7 +5,7 @@ export const songAPI = {
         return instance.get(`song/${id}`);
     },
     getSongs(artistId, offset, limit, sort) {
-        artistId = [artistId]
+        artistId = [artistId];
         return instance.get(`songs?${artistId.map(id => `artistIds[]=${id}`).join('&')}&offset=${offset}&limit=${limit}&sort=${sort}`);
     },
     addSong(name) {

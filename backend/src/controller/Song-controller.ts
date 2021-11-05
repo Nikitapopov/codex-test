@@ -8,7 +8,7 @@ import {
     Param,
     Post,
     Put,
-    QueryParams
+    QueryParams, UseAfter
 } from 'routing-controllers';
 import 'reflect-metadata';
 import {Info} from '../model/info';
@@ -20,6 +20,7 @@ import {Op} from 'sequelize';
 @JsonController('/song')
 export class SongController {
     @Get('/:id')
+    @Header('Access-Control-Allow-Origin', '*')
     async getOne(@Param('id') id: string) {
         const song = await Song.findByPk(id);
         if (!song)
@@ -28,7 +29,7 @@ export class SongController {
     }
 
     @Get('s/')
-    // @Header("Access-Control-Allow-Origin", "*")
+    @Header('Access-Control-Allow-Origin', '*')
     async getAll(@QueryParams() queryParams: { offset: number, limit: number, sortBy: string, sortOrder: 'ASC' | 'DESC', artistIds: string[] }) {
         const {offset, limit, sortBy = 'createdAt', sortOrder = 'ASC', artistIds} = queryParams;
         const sort = [[sortBy, sortOrder]];
@@ -53,7 +54,7 @@ export class SongController {
     }
 
     @Post()
-    // @UseBefore(json())
+    @Header('Access-Control-Allow-Origin', '*')
     async addSong(@Body() body: { name: string, artistId: number }) {
         console.log(body);
         if (!body.name)
@@ -65,7 +66,7 @@ export class SongController {
     }
 
     @Put('/:id')
-    // @UseBefore(json())
+    @Header('Access-Control-Allow-Origin', '*')
     async updateSong(@Param('id') id: string, @Body() body: { name: string, artistId: number }) {
         if (!body.name)
             throw new Error('name is not defined');
@@ -83,7 +84,7 @@ export class SongController {
     }
 
     @Delete('/:id')
-    // @UseBefore(json())
+    @Header('Access-Control-Allow-Origin', '*')
     async deleteSong(@Param('id') id: string) {
         const song = (await Song.findByPk(id));
         if (!song)
