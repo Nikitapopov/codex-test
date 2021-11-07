@@ -1,4 +1,3 @@
-// import express from 'express';
 import log4js from 'log4js';
 import { createExpressServer } from 'routing-controllers';
 import { ArtistController } from './controller/Artist-controller';
@@ -8,10 +7,9 @@ import cors from 'cors';
 dotenv.config();
 
 const corsOptions = {
-    origin: '*'
-    // origin: 'http://localhost:3000',
-    // methods: 'GET,PUT,POST,DELETE',
-    // optionsSuccessStatus: 200
+    origin: 'http://localhost:3000',
+    methods: 'GET,PUT,POST,DELETE',
+    optionsSuccessStatus: 200
 };
 
 const logger = log4js.getLogger();
@@ -29,5 +27,5 @@ const app = createExpressServer({
     ],
 });
 //todo вкл cors для всех запросов
-// app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 app.listen(port, () => console.log(`Running on port ${port}`));

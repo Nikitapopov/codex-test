@@ -1,34 +1,20 @@
 import * as Sequelize from 'sequelize';
 import {sequelize} from '../config';
 import {Optional, Model} from 'sequelize';
+import {IsDate, IsNumber, IsOptional, IsString} from 'class-validator';
 
 export interface ArtistAttributes {
     id: number,
     name: string,
-    // createdAt: Date,
-    // updatedAt: Date,
-    // deletedAt: Date,
 }
 
-// export interface ArtistModel extends Sequelize.Model<ArtistModel, ArtistAttributes> {
-//     id: number
-//     email: string
-//     password: string
-//     createdAt: string
-//     updatedAt: string
-// }
-
-export interface ArtistCreationAttributes extends Optional<ArtistAttributes, 'id'> {}
+export interface ArtistCreationAttributes extends Optional<ArtistAttributes, 'id'> {
+}
 
 interface ArtistInstance
-    extends Model<ArtistAttributes, ArtistCreationAttributes>, ArtistAttributes {}
+    extends Model<ArtistAttributes, ArtistCreationAttributes>, ArtistAttributes {
+}
 
-// export interface UserViewModel {
-//     id: number
-//     email: string
-// }
-
-// export const Artist = sequelize.define<UserModel, UserAddModel>('Artist', {
 export const Artist = sequelize.define<ArtistInstance>('Artist', {
     id: {
         type: Sequelize.INTEGER,
@@ -38,3 +24,33 @@ export const Artist = sequelize.define<ArtistInstance>('Artist', {
     },
     name: Sequelize.STRING,
 });
+
+export class GetAllArtistsQuery {
+    @IsNumber()
+    @IsOptional()
+    offset: number;
+
+    @IsNumber()
+    @IsOptional()
+    limit: number;
+
+    @IsString()
+    @IsOptional()
+    sortBy: string;
+
+    @IsString()
+    @IsOptional()
+    sortOrder: 'ASC' | 'DESC';
+
+    @IsString()
+    @IsOptional()
+    namePart: string;
+
+    @IsDate()
+    @IsOptional()
+    dateFrom: Date;
+
+    @IsDate()
+    @IsOptional()
+    dateTo: Date;
+}

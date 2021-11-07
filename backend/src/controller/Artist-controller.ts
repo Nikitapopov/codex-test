@@ -1,19 +1,16 @@
 import {
     Body,
-    Controller,
     Delete,
     Get, Header,
     JsonController,
-    OnUndefined,
     Param,
     Post, Put,
-    QueryParams, UseAfter, UseBefore
+    QueryParams
 } from 'routing-controllers';
 import 'reflect-metadata';
-import {Info} from '../model/info';
-import {v4 as uuid} from 'uuid';
-import {Artist, ArtistCreationAttributes} from '../model/artist';
-import {Song} from '../model/song';
+import {Artist, GetAllArtistsQuery} from '../model/artist';
+import {Op} from 'sequelize';
+import {OrderItem} from 'sequelize/types/lib/model';
 
 @JsonController('/artist')
 export class ArtistController {
@@ -28,10 +25,28 @@ export class ArtistController {
 
     @Get('s')
     @Header('Access-Control-Allow-Origin', '*')
-    async getAll(@QueryParams() queryParams: { offset: number, limit: number, sortBy: string, sortOrder: 'ASC' | 'DESC' }) {
-        const {offset, limit, sortBy = 'createdAt', sortOrder = 'ASC'} = queryParams;
-        const sort = [[sortBy, sortOrder]];
-        const artists = (await Artist.findAndCountAll({raw: true, offset, limit, order: sort}));
+    async getAll(@QueryParams() queryParams: GetAllArtistsQuery) {
+        const {offset, limit, sortBy = 'createdAt', sortOrder = 'ASC', namePart, dateFrom, dateTo} = queryParams;
+        const sort: OrderItem[] = [[sortBy, sortOrder]];
+        const whereFilter = {};
+        if (namePart) {
+            whereFilter['name'] = {
+                [Op.substring]: namePart
+            };
+        }
+        if (dateFrom) {
+            whereFilter['createdAt'] = {
+                [Op.gt]: dateFrom,
+            };
+        }
+        if (dateTo) {
+            whereFilter['createdAt'] = {
+                ...whereFilter['createdAt'],
+                [Op.lt]: dateTo,
+            };
+        }
+
+        const artists = (await Artist.findAndCountAll({raw: true, offset, limit, order: sort, where: whereFilter}));
         return artists ? artists : [];
     }
 

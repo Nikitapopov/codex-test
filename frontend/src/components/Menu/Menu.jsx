@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import cn from 'classnames';
 import s from './Menu.module.sass';
-import Table from "../Table/Table";
 import {artistAPI} from '../../api/artist';
 import {songAPI} from '../../api/song';
+import Songs from "../Songs/Songs";
+import Artists from "../Artists/Artists";
 
 const Menu = (props) => {
     const [artists, setArtists] = useState([]);
@@ -11,62 +11,93 @@ const Menu = (props) => {
     const [artistsRowsPerPage, setArtistsRowsPerPage] = useState(10);
     const [artistsPage, setArtistsPage] = useState(0);
     const [artistsCount, setArtistsCount] = useState(0);
-    // const [artistsSearch, setArtistSearch] = useState('');
-    // const [artistsCreateDate, setArtistsCreateDate] = useState({from: null, to: null});
-    // const [newArtistValue, setNewArtistValue] = useState('');
+    const [artistsSearch, setArtistSearch] = useState('');
+    const [artistsCreationDateFrom, setArtistsCreationDateFrom] = useState(null);
+    const [artistsCreationDateTo, setArtistsCreationDateTo] = useState(null);
 
     useEffect(async () => {
-        const artists = await artistAPI.getArtists((artistsPage) * artistsRowsPerPage, artistsRowsPerPage, artistsSort);
+        await getArtists();
+    }, [artistsSort, artistsRowsPerPage, artistsPage, artistsSearch, artistsCreationDateFrom, artistsCreationDateTo]);
+
+    const getArtists = async () => {
+        const artists = await artistAPI.getArtists(
+            (artistsPage) * artistsRowsPerPage,
+            artistsRowsPerPage,
+            artistsSort,
+            artistsSearch,
+            artistsCreationDateFrom,
+            artistsCreationDateTo
+        );
         setArtists(artists.data.rows);
         setArtistsCount(artists.data.count)
-    }, [artistsSort, artistsRowsPerPage, artistsPage]);
+    }
     const onClickArtistRow = (id) => {
-        setCurrArtist(id);
+        setCurrArtistId(id);
+        setCurrArtistName(artists.find(a => a.id === id));
     }
 
-    const [currArtist, setCurrArtist] = useState(null);
+    const [currArtistId, setCurrArtistId] = useState(null);
+    const [currArtistName, setCurrArtistName] = useState(null);
     const [songs, setSongs] = useState([]);
     const [songsSort, setSongsSort] = useState('asc');
     const [songsRowsPerPage, setSongsRowsPerPage] = useState(10);
     const [songsPage, setSongsPage] = useState(0);
     const [songsCount, setSongsCount] = useState(0);
-    // const [songsSearch, setSongSearch] = useState('');
-    // const [songsCreateDate, setSongsCreateDate] = useState({from: null, to: null});
-    // const [newSongValue, setNewSongValue] = useState('');
+    const [songsSearch, setSongSearch] = useState('');
+    const [songsCreationDateFrom, setSongsCreationDateFrom] = useState(null);
+    const [songsCreationDateTo, setSongsCreationDateTo] = useState(null);
+
     useEffect(async () => {
-        if (currArtist) {
-            const songs = await songAPI.getSongs(currArtist, (songsPage) * songsRowsPerPage, songsRowsPerPage, songsSort);
+        await getSongs();
+    }, [currArtistId, artistsSort, artistsRowsPerPage, songsPage, songsSearch, songsCreationDateFrom, songsCreationDateTo]);
+
+    const getSongs = async () => {
+        if (currArtistId) {
+            const songs = await songAPI.getSongs(
+                currArtistId,
+                (songsPage) * songsRowsPerPage,
+                songsRowsPerPage,
+                songsSort,
+                songsSearch,
+                songsCreationDateFrom,
+                songsCreationDateTo
+            );
             setSongs(songs.data.rows);
             setSongsCount(songs.data.count)
         }
-    }, [currArtist, artistsSort, artistsRowsPerPage, songsPage]);
+    }
 
     return (
         <section className={s.menu}>
-            <div className={s.table}>
-                <Table rows={artists}
-                       sort={artistsSort}
-                       rowsPerPage={artistsRowsPerPage}
-                       page={artistsPage}
-                       count={artistsCount}
-                       setSort={setArtistsSort}
-                       setRowsPerPage={setArtistsRowsPerPage}
-                       setPage={setArtistsPage}
-                       onClickRow={onClickArtistRow}
-                />
-            </div>
-            <div className={s.table}>
-                <Table rows={songs}
-                       sort={songsSort}
-                       rowsPerPage={songsRowsPerPage}
-                       page={songsPage}
-                       count={songsCount}
-                       setSort={setSongsSort}
-                       setRowsPerPage={setSongsRowsPerPage}
-                       setPage={setSongsPage}
-                       onClickRow={()=>{}}
-                />
-            </div>
+            <Artists rows={artists}
+                     sort={artistsSort}
+                     rowsPerPage={artistsRowsPerPage}
+                     page={artistsPage}
+                     count={artistsCount}
+                     setSort={setArtistsSort}
+                     setRowsPerPage={setArtistsRowsPerPage}
+                     setPage={setArtistsPage}
+                     setSearch={setArtistSearch}
+                     setCreationDateFrom={setArtistsCreationDateFrom}
+                     setCreationDateTo={setArtistsCreationDateTo}
+                     onClickRow={onClickArtistRow}
+                     getData={getArtists}
+            />
+            <Songs rows={songs}
+                   sort={songsSort}
+                   rowsPerPage={songsRowsPerPage}
+                   page={songsPage}
+                   count={songsCount}
+                   currArtist={currArtistName}
+                   currArtistId={currArtistId}
+                   setSort={setSongsSort}
+                   setRowsPerPage={setSongsRowsPerPage}
+                   setPage={setSongsPage}
+                   setSearch={setSongSearch}
+                   setCreationDateFrom={setSongsCreationDateFrom}
+                   setCreationDateTo={setSongsCreationDateTo}
+                   getData={getSongs}
+            />
         </section>
     )
 };

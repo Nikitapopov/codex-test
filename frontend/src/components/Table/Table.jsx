@@ -9,12 +9,16 @@ import {
     TablePagination,
     TableRow,
     Paper,
-    IconButton
+    IconButton,
+    TextField,
+    ClickAwayListener
 } from '@mui/material';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
+import {Delete as DeleteIcon, Edit as EditIcon, Done as DoneIcon, Search as SearchIcon} from '@mui/icons-material';
+import {useState} from "react";
 
 function TablePaginationActions(props) {
     const theme = useTheme();
@@ -71,7 +75,9 @@ function TablePaginationActions(props) {
 }
 
 const Table = (props) => {
-    const {rows, sort, rowsPerPage, page, count, setSort, setRowsPerPage, setPage, onClickRow} = props;
+    const {title, rows, sort, rowsPerPage, page, count, setSort, setRowsPerPage, setPage, onClickRow, onDeleteClick, updateRow} = props;
+    const [editingRowId, setEditingRowId] = useState(null);
+    const [editingRowValue, setEditingRowValue] = useState('');
     // Avoid a layout jump when reaching the last page with empty rows.
     const emptyRows = rowsPerPage - rows.length;
     const handleChangePage = (event, newPage) => {
@@ -83,20 +89,56 @@ const Table = (props) => {
         setPage(0);
     };
 
+    const onEditClick = (id) => {
+        setEditingRowId(id);
+    };
+    const saveRowChanges = async (rowId, value) => {
+        console.log('saveRowChanges', rowId, value)
+        await updateRow(rowId, value);
+        setEditingRowId(null);
+    };
+
     return (
         <TableContainer component={Paper}>
+            <TableRow key={'title'}><h1>{title}</h1></TableRow>
             <MuiTable sx={{minWidth: 500}} aria-label="custom pagination table">
                 <TableBody>
                     {rows.map((row) => (
-                        <TableRow key={row.name} onClick={() => onClickRow(row.id)}>
-                            <TableCell component="th" scope="row">
-                                {row.name}
+                        <TableRow key={row.id}>
+                            <TableCell
+                                style={{width: 200}}
+                                component="th"
+                                scope="row"
+                                onClick={() => onClickRow(row.id)}
+                                // onDoubleClick={() => {
+                                //     onEditClick(row.id);
+                                // }}
+                            >
+                                {editingRowId === row.id
+                                    ?
+                                    <ClickAwayListener onClickAway={() => setEditingRowId(null)}>
+                                        <div>
+                                            <TextField defaultValue={row.name} onChange={(event) => {
+                                                setEditingRowValue(event.target.value);
+                                            }
+                                            }/>
+                                            <IconButton onClick={async () => await saveRowChanges(row.id, editingRowValue)}>
+                                                <DoneIcon/>
+                                            </IconButton>
+                                        </div>
+                                    </ClickAwayListener>
+                                    : row.name
+                                }
                             </TableCell>
-                            <TableCell style={{width: 160}} align="right">
-                                {row.calories}
+                            <TableCell style={{width: 30}} align="right">
+                                <IconButton color="primary" component="span" onClick={() => onDeleteClick(row.id)}>
+                                    <DeleteIcon />
+                                </IconButton>
                             </TableCell>
-                            <TableCell style={{width: 160}} align="right">
-                                {row.fat}
+                            <TableCell style={{width: 30}} align="right">
+                                <IconButton color="primary" component="span" onClick={() => onEditClick(row.id)}>
+                                    <EditIcon />
+                                </IconButton>
                             </TableCell>
                         </TableRow>
                     ))}

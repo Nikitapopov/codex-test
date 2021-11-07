@@ -1,21 +1,17 @@
 import {
     Body,
-    Controller,
     Delete,
     Get, Header,
     JsonController,
-    OnUndefined,
     Param,
     Post,
     Put,
-    QueryParams, UseAfter
+    QueryParams
 } from 'routing-controllers';
 import 'reflect-metadata';
-import {Info} from '../model/info';
-import {v4 as uuid} from 'uuid';
-import {Artist, ArtistCreationAttributes} from '../model/artist';
-import {Song} from '../model/song';
+import {GetAllSongsQuery, Song} from '../model/song';
 import {Op} from 'sequelize';
+import {OrderItem} from 'sequelize/types/lib/model';
 
 @JsonController('/song')
 export class SongController {
@@ -30,33 +26,45 @@ export class SongController {
 
     @Get('s/')
     @Header('Access-Control-Allow-Origin', '*')
-    async getAll(@QueryParams() queryParams: { offset: number, limit: number, sortBy: string, sortOrder: 'ASC' | 'DESC', artistIds: string[] }) {
-        const {offset, limit, sortBy = 'createdAt', sortOrder = 'ASC', artistIds} = queryParams;
-        const sort = [[sortBy, sortOrder]];
+    async getAll(@QueryParams() queryParams: GetAllSongsQuery) {
+        const {offset, limit, sortBy = 'createdAt', sortOrder = 'ASC', artistIds, namePart, dateFrom, dateTo} = queryParams;
+        const sort: OrderItem[] = [[sortBy, sortOrder]];
+
+        const whereFilter = {};
+        if (namePart)
+            whereFilter['name'] = {
+                [Op.substring]: namePart
+            };
+        if (artistIds) {
+            whereFilter[Op.or] = Array.isArray(artistIds)
+                ? artistIds.map(id => ({artistId: id}))
+                : [{artistId: artistIds}];
+        }
+        if (dateFrom) {
+            whereFilter['createdAt'] = {
+                [Op.gt]: dateFrom,
+            };
+        }
+        if (dateTo) {
+            whereFilter['createdAt'] = {
+                ...whereFilter['createdAt'],
+                [Op.lt]: dateTo,
+            };
+        }
 
         const artists = (await Song.findAndCountAll({
             raw: true,
             offset,
             limit,
             order: sort,
-            where: artistIds
-                ? Array.isArray(artistIds)
-                    ? {
-                        [Op.or]: artistIds.map(id => ({artistId: id}))
-                    }
-                    : {
-                        [Op.or]: [{artistId: artistIds}]
-                    }
-                : {}
+            where: whereFilter
         }));
-        console.log('artists', artists);
         return artists ? artists : [];
     }
 
     @Post()
     @Header('Access-Control-Allow-Origin', '*')
     async addSong(@Body() body: { name: string, artistId: number }) {
-        console.log(body);
         if (!body.name)
             throw new Error('name is not defined');
         if (!body.artistId)
@@ -67,19 +75,13 @@ export class SongController {
 
     @Put('/:id')
     @Header('Access-Control-Allow-Origin', '*')
-    async updateSong(@Param('id') id: string, @Body() body: { name: string, artistId: number }) {
+    async updateSong(@Param('id') id: string, @Body() body: { name: string }) {
         if (!body.name)
             throw new Error('name is not defined');
-        if (!body.artistId)
-            throw new Error('artist id is not defined');
-        const artist = (await Artist.findByPk(body.artistId));
-        if (!artist)
-            throw new Error(`Artist with id ${body.artistId} not found`);
         const song = (await Song.findByPk(id));
         if (!song)
             throw new Error(`Song with id ${id} not found`);
         song.name = body.name;
-        song.artistId = body.artistId;
         return await song.save();
     }
 

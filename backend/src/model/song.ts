@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 import {sequelize} from '../config';
 import {Model, Optional} from 'sequelize';
+import {IsArray, IsDate, IsNumber, IsOptional, IsString} from 'class-validator';
 
 
 export interface SongAttributes {
@@ -28,3 +29,36 @@ export const Song = sequelize.define<SongInstance>('Song', {
         allowNull: false
     },
 });
+
+export class GetAllSongsQuery {
+    @IsNumber()
+    @IsOptional()
+    offset: number;
+
+    @IsNumber()
+    @IsOptional()
+    limit: number;
+
+    @IsString()
+    @IsOptional()
+    sortBy: string;
+
+    @IsString()
+    @IsOptional()
+    sortOrder: 'ASC' | 'DESC';
+
+    @IsString()
+    @IsOptional()
+    namePart: string;
+
+    @IsDate()
+    @IsOptional()
+    dateFrom: Date;
+
+    @IsDate()
+    @IsOptional()
+    dateTo: Date;
+
+    @IsArray()
+    artistIds: number[];
+}
