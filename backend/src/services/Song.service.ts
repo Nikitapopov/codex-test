@@ -1,33 +1,17 @@
-import {
-    Body,
-    Delete,
-    Get, Header,
-    JsonController,
-    Param,
-    Post,
-    Put,
-    QueryParams
-} from 'routing-controllers';
-import 'reflect-metadata';
-import {GetAllSongsQuery, Song} from '../model/song';
-import {Op} from 'sequelize';
-import {OrderItem} from 'sequelize/types/lib/model';
+import {Artist, ArtistAttributes, ArtistInstance} from '../model/artist';
+import {OrderItem} from "sequelize/types/lib/model";
+import {Op} from "sequelize";
+import {Song} from "../model/song";
 
-@JsonController('/song')
-export class SongController {
-    @Get('/:id')
-    @Header('Access-Control-Allow-Origin', '*')
-    async getOne(@Param('id') id: string) {
+export class SongService {
+    async getOne(id: number): Promise<ArtistAttributes> {
         const song = await Song.findByPk(id);
         if (!song)
             throw new Error(`Song with id ${id} not found`);
         return song.get();
     }
 
-    @Get('s/')
-    @Header('Access-Control-Allow-Origin', '*')
-    async getAll(@QueryParams() queryParams: GetAllSongsQuery) {
-        const {offset, limit, sortBy = 'createdAt', sortOrder = 'ASC', artistIds, namePart, dateFrom, dateTo} = queryParams;
+    async getAll(offset: number, limit: number, sortBy: string, sortOrder: string, artistIds: number[], namePart: string, dateFrom: Date, dateTo: Date): Promise<{ rows: ArtistAttributes[]; count: number } | any[]> {
         const sort: OrderItem[] = [[sortBy, sortOrder]];
 
         const whereFilter = {};
@@ -62,32 +46,27 @@ export class SongController {
         return artists ? artists : [];
     }
 
-    @Post()
-    @Header('Access-Control-Allow-Origin', '*')
-    async addSong(@Body() body: { name: string, artistId: number }) {
-        if (!body.name)
+    async addSong(name: string, artistId: number): Promise<ArtistAttributes> {
+        if (!name)
             throw new Error('name is not defined');
-        if (!body.artistId)
+        if (!artistId)
             throw new Error('artist id is not defined');
 
-        return await Song.create({name: body.name, artistId: body.artistId});
+        return await Song.create({name, artistId});
+
     }
 
-    @Put('/:id')
-    @Header('Access-Control-Allow-Origin', '*')
-    async updateSong(@Param('id') id: string, @Body() body: { name: string }) {
-        if (!body.name)
+    async updateSong(id: number, name: string): Promise<ArtistAttributes> {
+        if (!name)
             throw new Error('name is not defined');
         const song = (await Song.findByPk(id));
         if (!song)
             throw new Error(`Song with id ${id} not found`);
-        song.name = body.name;
+        song.name = name;
         return await song.save();
     }
 
-    @Delete('/:id')
-    @Header('Access-Control-Allow-Origin', '*')
-    async deleteSong(@Param('id') id: string) {
+    async deleteSong(id: number): Promise<void> {
         const song = (await Song.findByPk(id));
         if (!song)
             throw new Error(`Song with id ${id} not found`);

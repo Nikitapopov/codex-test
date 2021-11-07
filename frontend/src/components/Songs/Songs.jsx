@@ -92,7 +92,7 @@ const Songs = (props) => {
             }}>
                 <SearchIcon/>
             </IconButton>
-
+            <br/>
             <TextField label="Добавить песню"
                        value={newRow}
                        onChange={(event) => {

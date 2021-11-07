@@ -1,9 +1,10 @@
 import log4js from 'log4js';
 import { createExpressServer } from 'routing-controllers';
-import { ArtistController } from './controller/Artist-controller';
+import { ArtistController } from './controller/Artist.controller';
 import dotenv from 'dotenv';
-import {SongController} from './controller/Song-controller';
+import {SongController} from './controller/Song.controller';
 import cors from 'cors';
+import {LoggingMiddleware} from './middleware/middleware';
 dotenv.config();
 
 const corsOptions = {
@@ -17,7 +18,7 @@ logger.level = process.env.LOG_LEVEL;
 // logger.info('log4js log info');
 // logger.debug('log4js log debug');
 // logger.error('log4js log error');
-// const app = express();
+
 const port = process.env.PORT;
 const app = createExpressServer({
     // cors: cors(corsOptions),
@@ -25,6 +26,7 @@ const app = createExpressServer({
         ArtistController,
         SongController
     ],
+    middlewares: [LoggingMiddleware],
 });
 //todo вкл cors для всех запросов
 app.use(cors(corsOptions));

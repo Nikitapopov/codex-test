@@ -89,7 +89,7 @@ const Artists = (props) => {
             }}>
                 <SearchIcon/>
             </IconButton>
-
+            <br/>
             <TextField label="Добавить исполнителя"
                        value={newArtist}
                        onChange={(event) => {

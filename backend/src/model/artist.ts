@@ -1,7 +1,6 @@
 import * as Sequelize from 'sequelize';
+import {Model, Optional} from 'sequelize';
 import {sequelize} from '../config';
-import {Optional, Model} from 'sequelize';
-import {IsDate, IsNumber, IsOptional, IsString} from 'class-validator';
 
 export interface ArtistAttributes {
     id: number,
@@ -11,7 +10,7 @@ export interface ArtistAttributes {
 export interface ArtistCreationAttributes extends Optional<ArtistAttributes, 'id'> {
 }
 
-interface ArtistInstance
+export interface ArtistInstance
     extends Model<ArtistAttributes, ArtistCreationAttributes>, ArtistAttributes {
 }
 
@@ -25,32 +24,3 @@ export const Artist = sequelize.define<ArtistInstance>('Artist', {
     name: Sequelize.STRING,
 });
 
-export class GetAllArtistsQuery {
-    @IsNumber()
-    @IsOptional()
-    offset: number;
-
-    @IsNumber()
-    @IsOptional()
-    limit: number;
-
-    @IsString()
-    @IsOptional()
-    sortBy: string;
-
-    @IsString()
-    @IsOptional()
-    sortOrder: 'ASC' | 'DESC';
-
-    @IsString()
-    @IsOptional()
-    namePart: string;
-
-    @IsDate()
-    @IsOptional()
-    dateFrom: Date;
-
-    @IsDate()
-    @IsOptional()
-    dateTo: Date;
-}

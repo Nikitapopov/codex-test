@@ -1,8 +1,9 @@
 import {Dialect, Sequelize} from 'sequelize';
-import dotenv from 'dotenv';
-dotenv.config();
+const env = process.env.NODE_ENV || 'development';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const config = require(__dirname + '/../config/config.json')[env];
 
-export const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
-    dialect: process.env.DB_DRIVER as Dialect
+export const sequelize = new Sequelize(config.database, config.username, config.password, {
+    host: config.host,
+    dialect: config.dialect as Dialect
 });
